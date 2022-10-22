@@ -1,0 +1,8 @@
+name: MiniVaro
+version: '${project.version}'
+main: de.mxscha.minivaro.MiniVaroCore
+api-version: 1.19
+authors: [ Mxscha ]
+
+commands:
+  team:
