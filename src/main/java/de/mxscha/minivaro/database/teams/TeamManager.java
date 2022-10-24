@@ -2,6 +2,8 @@ package de.mxscha.minivaro.database.teams;
 
 import de.mxscha.minivaro.MiniVaroCore;
 import de.mxscha.minivaro.database.MySQL;
+import org.bukkit.entity.Player;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -11,16 +13,47 @@ public class TeamManager {
 
     public void createTables() {
         this.mySQL = MiniVaroCore.getInstance().getMySQL();
-        mySQL.update("CREATE TABLE IF NOT EXISTS teams (name VARCHAR(36), player1 VARCHAR(36), player2 VARCHAR(36), kills INT(35))");
+        mySQL.update("CREATE TABLE IF NOT EXISTS teams (name VARCHAR(36), shortcut VARCHAR(6), player1 VARCHAR(36), player2 VARCHAR(36), kills INT(35))");
     }
 
-    public boolean hasATeam(String name, String playerName) {
-        return getPlayer1(name).equals(playerName) || getPlayer2(name).equals(playerName);
+    public String getTeamShortCut(String teamName) {
+        String qry = "SELECT shortcut FROM teams WHERE name=?";
+        try (ResultSet rs = this.mySQL.query(qry, teamName)) {
+            if (rs.next()) {
+                return rs.getString("shortcut");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
-    public boolean exists(String name) {
+    public String getTeam(String playerName) {
+        if (isPlayer1(playerName)) {
+            String qry = "SELECT name FROM teams WHERE player1=?";
+            try (ResultSet rs = this.mySQL.query(qry, playerName)) {
+                if (rs.next()) {
+                    return rs.getString("name");
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        } else if (isPlayer2(playerName)) {
+            String qry = "SELECT name FROM teams WHERE player2=?";
+            try (ResultSet rs = this.mySQL.query(qry, playerName)) {
+                if (rs.next()) {
+                    return rs.getString("name");
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+    public boolean exists(String TeamName) {
         String qry = "SELECT count(*) AS count FROM teams WHERE name=?";
-        try (ResultSet rs = mySQL.query(qry, name)) {
+        try (ResultSet rs = mySQL.query(qry, TeamName)) {
             if (rs.next()) {
                 return rs.getInt("count") != 0;
             }
@@ -30,9 +63,9 @@ public class TeamManager {
         return false;
     }
 
-    public String getPlayer1(String name) {
+    public String getPlayer1(String TeamName) {
         String qry = "SELECT player1 FROM teams WHERE name=?";
-        try (ResultSet rs = this.mySQL.query(qry, name)) {
+        try (ResultSet rs = this.mySQL.query(qry, TeamName)) {
             if (rs.next()) {
                 return rs.getString("player1");
             }
@@ -42,9 +75,9 @@ public class TeamManager {
         return null;
     }
 
-    public String getPlayer2(String name) {
+    public String getPlayer2(String TeamName) {
         String qry = "SELECT player2 FROM teams WHERE name=?";
-        try (ResultSet rs = this.mySQL.query(qry, name)) {
+        try (ResultSet rs = this.mySQL.query(qry, TeamName)) {
             if (rs.next()) {
                 return rs.getString("player2");
             }
@@ -54,9 +87,9 @@ public class TeamManager {
         return null;
     }
 
-    public int getKills(String name) {
+    public int getKills(String TeamName) {
         String qry = "SELECT kills FROM teams WHERE name=?";
-        try (ResultSet rs = this.mySQL.query(qry, name)) {
+        try (ResultSet rs = this.mySQL.query(qry, TeamName)) {
             if (rs.next()) {
                 return rs.getInt("kills");
             }
@@ -64,5 +97,56 @@ public class TeamManager {
             e.printStackTrace();
         }
         return 0;
+    }
+
+    public boolean hasATeam(String playerName) {
+        return isPlayer1(playerName) || isPlayer2(playerName);
+    }
+
+    public boolean isInTeam(String TeamName, String playerName) {
+        if (exists(TeamName)) {
+            return getPlayer1(TeamName).equals(playerName) || getPlayer2(TeamName).equals(playerName);
+        } else
+            return false;
+    }
+
+    public int getTeamsCount() {
+        String qry = "SELECT count(*) AS count FROM teams";
+        try (ResultSet rs = mySQL.query(qry)) {
+            if (rs.next()) {
+                return rs.getInt("count");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
+    public boolean isInSameTeam(String player1, String player2) {
+        return getTeam(player1).equals(getTeam(player2));
+    }
+
+    public boolean isPlayer1(String playerName) {
+        String qry = "SELECT count(*) AS count FROM teams WHERE player1=?";
+        try (ResultSet rs = mySQL.query(qry, playerName)) {
+            if (rs.next()) {
+                return rs.getInt("count") != 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean isPlayer2(String playerName) {
+        String qry1 = "SELECT count(*) AS count FROM teams WHERE player2=?";
+        try (ResultSet rs = mySQL.query(qry1, playerName)) {
+            if (rs.next()) {
+                return rs.getInt("count") != 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

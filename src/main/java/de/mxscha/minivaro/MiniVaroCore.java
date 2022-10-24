@@ -3,6 +3,10 @@ package de.mxscha.minivaro;
 import de.mxscha.minivaro.commands.TeamCommand;
 import de.mxscha.minivaro.database.MySQL;
 import de.mxscha.minivaro.database.teams.TeamManager;
+import de.mxscha.minivaro.listeners.ChatListener;
+import de.mxscha.minivaro.listeners.JoinListener;
+import de.mxscha.minivaro.listeners.QuitListener;
+import de.mxscha.minivaro.listeners.TeamDamageListener;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -10,6 +14,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 public final class MiniVaroCore extends JavaPlugin {
 
     private static String prefix;
+    private static String scoreboardTitle;
     private MySQL mySQL;
     private static MiniVaroCore instance;
     TeamManager manager;
@@ -29,6 +34,12 @@ public final class MiniVaroCore extends JavaPlugin {
     private void load(PluginManager pluginManager) {
         instance = this;
         prefix = getConfig().getString("Messages.Prefix");
+        scoreboardTitle = getConfig().getString("Messages.ScoreboardTitle");
+
+        pluginManager.registerEvents(new JoinListener(), this);
+        pluginManager.registerEvents(new QuitListener(), this);
+        pluginManager.registerEvents(new ChatListener(), this);
+        pluginManager.registerEvents(new TeamDamageListener(), this);
 
         getCommand("team").setExecutor(new TeamCommand());
 
@@ -42,8 +53,10 @@ public final class MiniVaroCore extends JavaPlugin {
     }
 
     private void createConfigDefaults() {
-        if (!getConfig().contains("Messages.Prefix"))
+        if (!getConfig().contains("Messages.Prefix")) {
             getConfig().set("Messages.Prefix", "§6§lMini§a§lVaro §8| §f");
+            getConfig().set("Messages.ScoreboardTitle", "§6§lMini§a§lVaro");
+        }
         if (!getConfig().contains("MySQL.url")) {
             getConfig().set("MySQL.url", "url");
             getConfig().set("MySQL.port", "port");
@@ -86,7 +99,11 @@ public final class MiniVaroCore extends JavaPlugin {
         return instance;
     }
 
-    public TeamManager getManager() {
+    public static String getScoreboardTitle() {
+        return scoreboardTitle;
+    }
+
+    public TeamManager getTeamManager() {
         return manager;
     }
 }
