@@ -42,7 +42,7 @@ public class TablistManager {
 
     private static void setPlayerList(Player player) {
         player.setPlayerListHeader("§8§m                     §8[ §6" + MiniVaroCore.getScoreboardTitle() + " §8]§m                     " +
-                "§f\n §7Lebende Teams§8: §c" + MiniVaroCore.getInstance().getTeamManager().getTeamsCount() + "\n");
+                "§f\n §7Lebende Teams§8: §a"+MiniVaroCore.getInstance().getTeamManager().getAliveTeamsCount()+"§7/§c" + MiniVaroCore.getInstance().getTeamManager().getTeamsCount() + "\n");
         player.setPlayerListFooter("\n§fYou§4Tube§8: §7@Mxscha§8, §5Twitch§8: §7@4yMicha\n§8§m                                                           ");
     }
 }

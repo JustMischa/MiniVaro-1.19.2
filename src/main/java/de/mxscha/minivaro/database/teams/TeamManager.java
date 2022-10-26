@@ -2,8 +2,6 @@ package de.mxscha.minivaro.database.teams;
 
 import de.mxscha.minivaro.MiniVaroCore;
 import de.mxscha.minivaro.database.MySQL;
-import org.bukkit.entity.Player;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -13,7 +11,70 @@ public class TeamManager {
 
     public void createTables() {
         this.mySQL = MiniVaroCore.getInstance().getMySQL();
-        mySQL.update("CREATE TABLE IF NOT EXISTS teams (name VARCHAR(36), shortcut VARCHAR(6), player1 VARCHAR(36), player2 VARCHAR(36), kills INT(35))");
+        mySQL.update("CREATE TABLE IF NOT EXISTS teams (" +
+                "name VARCHAR(36), " +
+                "shortcut VARCHAR(6), " +
+                "player1 VARCHAR(36), " +
+                "player2 VARCHAR(36), " +
+                "alivePlayer1 BOOLEAN, " +
+                "alivePlayer2 BOOLEAN, " +
+                "aliveTeam BOOLEAN, " +
+                "kills INT(35)" +
+                ")");
+    }
+
+    public void setPlayer1Dead(String teamName) {
+        mySQL.update("UPDATE teams SET alivePlayer1=? WHERE name=?", false, teamName);
+        if (!isAlivePlayer2(teamName)) {
+            setTeamDead(teamName);
+        }
+    }
+
+    public void setPlayer2Dead(String teamName) {
+        mySQL.update("UPDATE teams SET alivePlayer2=? WHERE name=?", false, teamName);
+        if (!isAlivePlayer1(teamName)) {
+            setTeamDead(teamName);
+        }
+    }
+
+    private void setTeamDead(String teamName) {
+        mySQL.update("UPDATE teams SET aliveTeam=? WHERE name=?", false, teamName);
+    }
+
+    public boolean isTeamAlive(String teamName) {
+        String qry = "SELECT aliveTeam FROM teams WHERE name=?";
+        try (ResultSet rs = this.mySQL.query(qry, teamName)) {
+            if (rs.next()) {
+                return rs.getBoolean("aliveTeam");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean isAlivePlayer1(String teamName) {
+        String qry = "SELECT alivePlayer1 FROM teams WHERE name=?";
+        try (ResultSet rs = this.mySQL.query(qry, teamName)) {
+            if (rs.next()) {
+                return rs.getBoolean("alivePlayer1");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean isAlivePlayer2(String teamName) {
+        String qry = "SELECT alivePlayer2 FROM teams WHERE name=?";
+        try (ResultSet rs = this.mySQL.query(qry, teamName)) {
+            if (rs.next()) {
+                return rs.getBoolean("alivePlayer2");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     public String getTeamShortCut(String teamName) {
@@ -122,6 +183,18 @@ public class TeamManager {
         return -1;
     }
 
+    public int getAliveTeamsCount() {
+        String qry = "SELECT count(*) AS count FROM teams WHERE aliveTeam=?";
+        try (ResultSet rs = mySQL.query(qry, true)) {
+            if (rs.next()) {
+                return rs.getInt("count");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
     public boolean isInSameTeam(String player1, String player2) {
         return getTeam(player1).equals(getTeam(player2));
     }
@@ -148,5 +221,9 @@ public class TeamManager {
             e.printStackTrace();
         }
         return false;
+    }
+
+    public void addKill(String teamName) {
+        mySQL.update("UPDATE teams SET kills=? WHERE name=?", 1, teamName);
     }
 }

@@ -2,7 +2,10 @@ package de.mxscha.minivaro.listeners;
 
 import de.mxscha.minivaro.MiniVaroCore;
 import de.mxscha.minivaro.database.teams.TeamManager;
+import de.mxscha.minivaro.listeners.lobby.LobbyListener;
 import de.mxscha.minivaro.utils.scoreboard.DefaultScoreboard;
+import de.mxscha.minivaro.utils.scoreboard.LobbyScoreboard;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -21,6 +24,13 @@ public class QuitListener implements Listener {
             event.setQuitMessage("§8[§a" + manager.getTeamShortCut(manager.getTeam(player.getName())) + "§8] §9" + player.getName() + "§7 hat das Spiel verlassen!");
         } else {
             event.setQuitMessage("§9" + player.getName() + "§7 hat das Spiel verlassen!");
+        }
+        if (MiniVaroCore.getInstance().getGameManager().isStarted()) {
+            if (JoinListener.noTime.contains(player) || JoinListener.noTeam.contains(player) || DeathListener.getEliminated().contains(player)) {
+                event.setQuitMessage(null);
+            }
+        } else {
+            Bukkit.getOnlinePlayers().forEach(LobbyScoreboard::new);
         }
     }
 }
