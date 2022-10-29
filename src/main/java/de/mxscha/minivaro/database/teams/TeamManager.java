@@ -2,8 +2,12 @@ package de.mxscha.minivaro.database.teams;
 
 import de.mxscha.minivaro.MiniVaroCore;
 import de.mxscha.minivaro.database.MySQL;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.UUID;
 
 public class TeamManager {
 
@@ -21,7 +25,58 @@ public class TeamManager {
                 "aliveTeam BOOLEAN, " +
                 "kills INT(35)" +
                 ")");
+        mySQL.update("CREATE TABLE IF NOT EXISTS players(uuid VARCHAR(36), playerID INT(35))");
     }
+
+    // PlayerID manger
+
+    public void initPlayerWithID(UUID uuid) {
+        if (!doesPlayerHasID(uuid)) {
+            mySQL.update("INSERT INTO players (uuid, playerID) VALUES (?,?)", uuid.toString(), getLastPlayersID()+1);
+        }
+    }
+
+    public int getLastPlayersID() {
+        return getPlayerCount();
+    }
+
+    public boolean doesPlayerHasID(UUID uuid) {
+        String qry = "SELECT count(*) AS count FROM players WHERE uuid=?";
+        try (ResultSet rs = mySQL.query(qry, uuid.toString())) {
+            if (rs.next()) {
+                return rs.getInt("count") != 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public String getPlayerByID(int ID) {
+        String qry = "SELECT uuid FROM players WHERE playerID=?";
+        try (ResultSet rs = this.mySQL.query(qry, ID)) {
+            if (rs.next()) {
+                 return rs.getString("uuid");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public int getPlayerCount() {
+        String qry = "SELECT count(*) AS count FROM players";
+        try (ResultSet rs = mySQL.query(qry)) {
+            if (rs.next()) {
+                return rs.getInt("count");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    // Team Manger
 
     public void setPlayer1Dead(String teamName) {
         mySQL.update("UPDATE teams SET alivePlayer1=? WHERE name=?", false, teamName);

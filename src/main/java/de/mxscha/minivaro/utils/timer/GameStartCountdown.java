@@ -1,13 +1,16 @@
 package de.mxscha.minivaro.utils.timer;
 
 import de.mxscha.minivaro.MiniVaroCore;
+import de.mxscha.minivaro.database.teams.TeamManager;
+import de.mxscha.minivaro.utils.location.ConfigLocationUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.util.Random;
+import java.util.UUID;
 
 public class GameStartCountdown {
 
@@ -31,33 +34,38 @@ public class GameStartCountdown {
                     }
                     switch (seconds) {
                         case 300:
-                             Bukkit.broadcastMessage(MiniVaroCore.getPrefix() + "§7Das Projekt statet in §9§l5 Minuten§7!");
+                             Bukkit.broadcastMessage(MiniVaroCore.getPrefix() + "§7Das Projekt startet in §9§l5 Minuten§7!");
                             for(Player online : Bukkit.getOnlinePlayers()) {
                                 online.playSound(online.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 25, 0);
                             }
                             break;
                         case 240:
-                            Bukkit.broadcastMessage(MiniVaroCore.getPrefix() + "§7Das Projekt statet in §9§l4 Minuten§7!");
+                            Bukkit.broadcastMessage(MiniVaroCore.getPrefix() + "§7Das Projekt startet in §9§l4 Minuten§7!");
                             for(Player online : Bukkit.getOnlinePlayers()) {
                                 online.playSound(online.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 25, 0);
                             }
                             break;
                         case 120:
                             Bukkit.broadcastMessage(MiniVaroCore.getPrefix() + "§cTeleportiere...");
-                            Bukkit.broadcastMessage(MiniVaroCore.getPrefix() + "§7Das Projekt statet in §9§l2 Minuten§7!");
+                            Bukkit.broadcastMessage(MiniVaroCore.getPrefix() + "§7Das Projekt startet in §9§l2 Minuten§7!");
+                            for(Player online : Bukkit.getOnlinePlayers()) {
+                                online.playSound(online.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 25, 0);
+                            }
+                            break;
+                        case 60: case 30: case 20: case 15: case 10: case 9: case 8: case 7: case 6: case 5: case 4: case 3: case 2:
+                            Bukkit.broadcastMessage(MiniVaroCore.getPrefix() + "§7Das Projekt startet in §9§l"+seconds+" Sekunden§7!");
+                            for(Player online : Bukkit.getOnlinePlayers()) {
+                                online.playSound(online.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 25, 0);
+                            }
+                            break;
+                        case 40:
                             for(Player online : Bukkit.getOnlinePlayers()) {
                                 online.playSound(online.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 25, 0);
                                 sendTeleportTitle(online);
                             }
                             break;
-                        case 60: case 30: case 20: case 15: case 10: case 9: case 8: case 7: case 6: case 5: case 4: case 3: case 2:
-                            Bukkit.broadcastMessage(MiniVaroCore.getPrefix() + "§7Das Projekt statet in §9§l"+seconds+" Sekunden§7!");
-                            for(Player online : Bukkit.getOnlinePlayers()) {
-                                online.playSound(online.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 25, 0);
-                            }
-                            break;
                         case 1:
-                            Bukkit.broadcastMessage(MiniVaroCore.getPrefix() + "§7Das Projekt statet in §9§l"+seconds+" Sekunde§7!");
+                            Bukkit.broadcastMessage(MiniVaroCore.getPrefix() + "§7Das Projekt startet in §9§l"+seconds+" Sekunde§7!");
                             for(Player online : Bukkit.getOnlinePlayers()) {
                                 online.playSound(online.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 25, 0);
                             }
@@ -79,47 +87,48 @@ public class GameStartCountdown {
     private void sendTeleportTitle(Player online) {
         TeleportTitle = new BukkitRunnable() {
             int teleportseconds = 5;
-            int random = new Random().nextInt(10);
             @Override
             public void run() {
-                if (random == 0) {
-                    random = 1;
-                }
                 switch (teleportseconds) {
                     case 5:
-                        online.sendTitle("", "§cTeleportiere.");
-                        break;
-                    case 4:
-                        online.sendTitle("", "§cTeleportiere..");
-                        break;
-                    case 3:
-                        online.sendTitle("", "§cTeleportiere...");
-                        break;
-                    case 2:
                         online.sendTitle("", "§cTeleportiere");
                         break;
+                    case 4:
+                        online.sendTitle("", "§cTeleportiere.");
+                        break;
+                    case 3:
+                        online.sendTitle("", "§cTeleportiere..");
+                        break;
+                    case 2:
+                        online.sendTitle("", "§cTeleportiere...");
+                        break;
                     case 1:
+                        teleport();
+                        online.playSound(online.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 25, 0);
                         break;
                     case 0:
                         teleportseconds = 5;
                         break;
-                }
-                if (teleportseconds == random) {
-                    teleport(online);
                 }
                 teleportseconds--;
             }
         }.runTaskTimer(MiniVaroCore.getInstance(), 0, 20);
     }
 
-    private void teleport(Player online) {
+    private void teleport() {
         if (TeleportTitle != null)
             TeleportTitle.cancel();
         TeleportTitle = null;
-        if (MiniVaroCore.getInstance().getTeamManager().hasATeam(online.getName())) {
-            // Teleport Players to Their Spawn
-        } else
-            online.kickPlayer(MiniVaroCore.getScoreboardTitle() + "\n §cDu bist  in keinem Team \n §c§lBITTE WENDE DICH AN DIE PROJEKT LEITUNG!");
+        TeamManager teamManager = MiniVaroCore.getInstance().getTeamManager();
+        for (int i = 1; i <= teamManager.getPlayerCount(); i++) {
+            UUID uuid = UUID.fromString(teamManager.getPlayerByID(i));
+            Player player = Bukkit.getPlayer(uuid);
+            Location location = new ConfigLocationUtil("Spawn"+i).loadLocation();
+            if (player == null) return;
+            if (location == null) return;
+            if (!player.isOnline()) return;
+            player.teleport(location);
+        }
     }
 
     public void stop() {

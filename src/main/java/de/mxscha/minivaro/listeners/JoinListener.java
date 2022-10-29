@@ -1,21 +1,21 @@
 package de.mxscha.minivaro.listeners;
 
 import de.mxscha.minivaro.MiniVaroCore;
+import de.mxscha.minivaro.database.MySQL;
 import de.mxscha.minivaro.database.teams.TeamManager;
+import de.mxscha.minivaro.utils.PlayTimeManager;
+import de.mxscha.minivaro.utils.location.ConfigLocationUtil;
 import de.mxscha.minivaro.utils.scoreboard.DefaultScoreboard;
 import de.mxscha.minivaro.utils.scoreboard.LobbyScoreboard;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.checkerframework.checker.units.qual.A;
-
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.TimeZone;
+import java.util.UUID;
 
 public class JoinListener implements Listener {
 
@@ -33,7 +33,6 @@ public class JoinListener implements Listener {
             event.setJoinMessage("§9" + player.getName() + "§7 hat das Spiel betreten!");
         }
         if (MiniVaroCore.getInstance().getGameManager().isStarted()) {
-
             if (manager.isPlayer1(player.getName())) {
                 if (!manager.isAlivePlayer1(manager.getTeam(player.getName()))) {
                     DeathListener.getEliminated().add(player);
@@ -62,8 +61,11 @@ public class JoinListener implements Listener {
                 player.kickPlayer(MiniVaroCore.getScoreboardTitle() + "\n §cDu bist nicht berechtigt \n §cDiesen Server zu betreten!");
             }
         } else {
-            // Teleport to LobbySpawn
             Bukkit.getOnlinePlayers().forEach(LobbyScoreboard::new);
+            Location location = new ConfigLocationUtil("Lobby").loadLocation();
+            if (location == null)
+                return;
+            player.teleport(location);
         }
     }
 

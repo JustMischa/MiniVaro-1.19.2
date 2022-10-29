@@ -23,6 +23,9 @@ public class Team {
     public void save() {
         mySQL.update("INSERT INTO teams (name, shortcut, player1, player2, alivePlayer1, alivePlayer2, aliveTeam, kills) VALUES (?,?,?,?,?,?,?,?)",
                 name, shortcut, player1.getName(), player2.getName(), true, true, true, 0);
+        TeamManager teamManager = MiniVaroCore.getInstance().getTeamManager();
+        teamManager.initPlayerWithID(player1.getUniqueId());
+        teamManager.initPlayerWithID(player2.getUniqueId());
     }
 
     public String getShortcut() {

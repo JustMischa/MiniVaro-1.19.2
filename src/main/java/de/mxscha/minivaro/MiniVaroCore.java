@@ -1,5 +1,6 @@
 package de.mxscha.minivaro;
 
+import de.mxscha.minivaro.commands.AdminSetupCommand;
 import de.mxscha.minivaro.commands.AdminStartCommand;
 import de.mxscha.minivaro.commands.TeamCommand;
 import de.mxscha.minivaro.database.MySQL;
@@ -8,6 +9,7 @@ import de.mxscha.minivaro.listeners.*;
 import de.mxscha.minivaro.listeners.lobby.LobbyListener;
 import de.mxscha.minivaro.utils.GameManager;
 import de.mxscha.minivaro.utils.PlayTimeManager;
+import de.mxscha.minivaro.utils.location.LocationsConfig;
 import de.mxscha.minivaro.utils.timer.GameStartCountdown;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
@@ -15,13 +17,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public final class MiniVaroCore extends JavaPlugin {
-
-    // TODO: eliminations -> Kick = nicht mehr joinen
-    //                    -> In Database eintragen
-    //       Spawns       -> Setup command
-    //                    -> vorspiel phase
-    //       Worldborder  -> verkleinert sich nach X tagen
-    //              -> Beide Spieler MÜSSEN gleichzeitig spielen
 
     private static String prefix;
     private static String scoreboardTitle;
@@ -43,6 +38,7 @@ public final class MiniVaroCore extends JavaPlugin {
     private void loadConfigs() {
         createConfigDefaults();
         saveConfig();
+        LocationsConfig.save();
     }
 
     private void load(PluginManager pluginManager) {
@@ -60,6 +56,7 @@ public final class MiniVaroCore extends JavaPlugin {
 
         getCommand("team").setExecutor(new TeamCommand());
         getCommand("start").setExecutor(new AdminStartCommand());
+        getCommand("setup").setExecutor(new AdminSetupCommand());
 
         TeamManager = new TeamManager();
         GameManager = new GameManager();
@@ -84,12 +81,13 @@ public final class MiniVaroCore extends JavaPlugin {
                             case 60 -> player.sendMessage(MiniVaroCore.getPrefix() + "§c§lACHTUNG§7, §7Deine Zeit für heute endet in §91 Minute");
                             case 30, 20, 15, 10, 5, 4, 3, 2 -> player.sendMessage(MiniVaroCore.getPrefix() + "§c§lACHTUNG§7, §7Deine Zeit für heute endet in §9" + TimeManager.getTime(player.getUniqueId()) + " Sekunden");
                             case 1 -> player.sendMessage(MiniVaroCore.getPrefix() + "§c§lACHTUNG§7, §7Deine Zeit für heute endet in §9" + TimeManager.getTime(player.getUniqueId()) + " Sekunde");
-                            case 0 -> player.kickPlayer(MiniVaroCore.getScoreboardTitle() + "\n §cDeine Zeit ist aufgebraucht! \n §9Deine Zeit wird um Mitternacht wieder aufgefüllt!");
+                            case 0 ->      player.kickPlayer(MiniVaroCore.getScoreboardTitle() + "\n §8§m                                                 §f\n" + "  §c§lDeine Zeit für Heute ist aufgebraucht! \n \n  §7Du kannst morgen wieder Spielen! \n  §8§m                                                 §f");
+
                         }
-                        // need for every player not for every online player!
-                        TimeManager.checkResetPlayerTime(player.getUniqueId());
+
                     });
                 }
+                TimeManager.checkResetPlayerTime();
             }
         }.runTaskTimer(this, 0, 20);
     }
