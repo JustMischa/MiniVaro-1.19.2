@@ -18,6 +18,8 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public final class MiniVaroCore extends JavaPlugin {
 
+    // 36 Players = 18 Teams
+
     private static String prefix;
     private static String scoreboardTitle;
     private MySQL mySQL;
