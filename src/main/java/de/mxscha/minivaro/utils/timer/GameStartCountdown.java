@@ -2,15 +2,16 @@ package de.mxscha.minivaro.utils.timer;
 
 import de.mxscha.minivaro.MiniVaroCore;
 import de.mxscha.minivaro.database.teams.TeamManager;
+import de.mxscha.minivaro.listeners.JoinListener;
+import de.mxscha.minivaro.listeners.QuitListener;
 import de.mxscha.minivaro.utils.location.ConfigLocationUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Sound;
+import org.bukkit.WorldBorder;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
-
-import java.util.UUID;
 
 public class GameStartCountdown {
 
@@ -82,10 +83,9 @@ public class GameStartCountdown {
         }
     }
 
-    private BukkitTask TeleportTitle;
 
     private void sendTeleportTitle(Player online) {
-        TeleportTitle = new BukkitRunnable() {
+        new BukkitRunnable() {
             int teleportseconds = 5;
             @Override
             public void run() {
@@ -103,11 +103,11 @@ public class GameStartCountdown {
                         online.sendTitle("", "§cTeleportiere...");
                         break;
                     case 1:
-                        teleport();
+                        teleport(online);
                         online.playSound(online.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 25, 0);
                         break;
                     case 0:
-                        teleportseconds = 5;
+                        cancel();
                         break;
                 }
                 teleportseconds--;
@@ -115,19 +115,19 @@ public class GameStartCountdown {
         }.runTaskTimer(MiniVaroCore.getInstance(), 0, 20);
     }
 
-    private void teleport() {
-        if (TeleportTitle != null)
-            TeleportTitle.cancel();
-        TeleportTitle = null;
+    private void teleport(Player online) {
+        WorldBorder border = Bukkit.getWorld("world").getWorldBorder();
+        border.setCenter(Bukkit.getWorld("world").getSpawnLocation());
+        border.setSize(300);
         TeamManager teamManager = MiniVaroCore.getInstance().getTeamManager();
-        for (int i = 1; i <= teamManager.getPlayerCount(); i++) {
-            UUID uuid = UUID.fromString(teamManager.getPlayerByID(i));
-            Player player = Bukkit.getPlayer(uuid);
-            Location location = new ConfigLocationUtil("Spawn"+i).loadLocation();
-            if (player == null) return;
-            if (location == null) return;
-            if (!player.isOnline()) return;
-            player.teleport(location);
+        if (teamManager.hasATeam(online.getName())) {
+            int id = teamManager.getPlayersID(online.getUniqueId());
+            Location spawn = new ConfigLocationUtil("Spawn"+id).loadLocation();
+            if (spawn == null) return;
+            online.teleport(spawn);
+        } else {
+            JoinListener.noTeam.add(online);
+            online.kickPlayer(MiniVaroCore.getScoreboardTitle() + "\n §cDu bist nicht berechtigt \n §cAuf diesem Server zu sein!");
         }
     }
 

@@ -64,6 +64,18 @@ public class TeamManager {
         return null;
     }
 
+    public int getPlayersID(UUID uuid) {
+        String qry = "SELECT playerID FROM players WHERE uuid=?";
+        try (ResultSet rs = this.mySQL.query(qry, uuid.toString())) {
+            if (rs.next()) {
+                return rs.getInt("playerID");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
     public int getPlayerCount() {
         String qry = "SELECT count(*) AS count FROM players";
         try (ResultSet rs = mySQL.query(qry)) {
@@ -77,6 +89,20 @@ public class TeamManager {
     }
 
     // Team Manger
+
+    public String getLastTeamStanding() {
+        if (getAliveTeamsCount() == 1) {
+            String qry = "SELECT name FROM teams WHERE aliveTeam=?";
+            try (ResultSet rs = mySQL.query(qry, true)) {
+                if (rs.next()) {
+                    return rs.getString("name");
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
 
     public void setPlayer1Dead(String teamName) {
         mySQL.update("UPDATE teams SET alivePlayer1=? WHERE name=?", false, teamName);

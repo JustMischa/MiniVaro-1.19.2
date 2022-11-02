@@ -37,9 +37,9 @@ public class TeamCommand implements CommandExecutor {
                             OfflinePlayer player1 = Bukkit.getOfflinePlayer(args[3]);
                             OfflinePlayer player2 = Bukkit.getOfflinePlayer(args[4]);
                             if (!(player1 == player2)) {
-                                if (MiniVaroCore.getInstance().getTeamManager().hasATeam(player1.getName())) {
+                                if (MiniVaroCore.getInstance().getTeamManager().hasATeam(player1.getName()) && !player2.getName().equals("null")) {
                                     player.sendMessage(MiniVaroCore.getPrefix() + "§cSpieler 1 ist bereits in einem Team");
-                                } else if (MiniVaroCore.getInstance().getTeamManager().hasATeam(player2.getName())) {
+                                } else if (MiniVaroCore.getInstance().getTeamManager().hasATeam(player2.getName()) && !player2.getName().equals("null")) {
                                     player.sendMessage(MiniVaroCore.getPrefix() + "§cSpieler 2 ist bereits in einem Team");
                                 } else {
                                     String shortcut = args[2];

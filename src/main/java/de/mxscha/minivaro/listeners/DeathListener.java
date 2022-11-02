@@ -31,6 +31,7 @@ public class DeathListener implements Listener {
                                 +player.getName() + "§7 wurde von §8[§a"+manager.getTeamShortCut(manager.getTeam(killer.getName()))+"§8] §c"
                                 +killer.getName() + "§7 geötet!");
                         eliminated.add(player);
+                        manager.addKill(manager.getTeam(killer.getName()));
                         Bukkit.getOnlinePlayers().forEach(online -> {
                             online.playSound(online.getLocation(), Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 1, 1);
                             new DefaultScoreboard(online);
@@ -51,6 +52,7 @@ public class DeathListener implements Listener {
                 player.kickPlayer(MiniVaroCore.getScoreboardTitle() + "\n §8§m                                                 §f\n" +
                         "  §c§lDu bist ausgeschieden! \n \n  §7Vielen dank fürs mitmachen! \n  §8§m                                                 §f");
                 killPlayerInDatabase(player);
+
             }
         }
     }

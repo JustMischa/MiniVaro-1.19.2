@@ -4,8 +4,15 @@ import de.mxscha.minivaro.MiniVaroCore;
 import de.mxscha.minivaro.database.MySQL;
 import de.mxscha.minivaro.database.teams.TeamManager;
 import de.mxscha.minivaro.utils.scoreboard.DefaultScoreboard;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
 import org.bukkit.Bukkit;
+import org.bukkit.WorldBorder;
+import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 
+import java.awt.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
@@ -13,6 +20,7 @@ import java.util.UUID;
 public class GameManager {
 
     private final MySQL mySQL;
+    private boolean stopping;
 
     public GameManager() {
         this.mySQL = MiniVaroCore.getInstance().getMySQL();
@@ -24,8 +32,8 @@ public class GameManager {
     }
 
     private boolean getStarted() {
-        String qry = "SELECT started FROM game WHERE started=?";
-        try (ResultSet rs = this.mySQL.query(qry, true)) {
+        String qry = "SELECT started FROM game";
+        try (ResultSet rs = this.mySQL.query(qry)) {
             if (rs.next()) {
                 return rs.getBoolean("started");
             }
@@ -47,6 +55,58 @@ public class GameManager {
                 mySQL.update("INSERT INTO playTime (uuid, seconds) VALUES (?,?)", uuid.toString(), manager1.getSecondsPerDay());
             } else
                 mySQL.update("UPDATE playTime SET seconds=? WHERE uuid=?", manager1.getTime(uuid) + manager1.getSecondsPerDay(), uuid.toString());
+        }
+        WorldBorder border = Bukkit.getWorld("world").getWorldBorder();
+        border.setCenter(Bukkit.getWorld("world").getSpawnLocation());
+        border.setSize(3000, 60*4);
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                Bukkit.broadcastMessage(MiniVaroCore.getPrefix()+ "§c§lDie Border wird nun kleiner!");
+                border.setSize(200, 604800*2);
+            }
+        }.runTaskLater(MiniVaroCore.getInstance(), (20*60)*10);
+    }
+
+    public void checkEnd() {
+        TeamManager teamManager = MiniVaroCore.getInstance().getTeamManager();
+        if (isStarted()) {
+            if (!stopping) {
+                mySQL.update("UPDATE game (started) VALUES (?)", false);
+                if (MiniVaroCore.getInstance().getTeamManager().getAliveTeamsCount() == 1) {
+                    stopping = true;
+                    new BukkitRunnable() {
+                        int seconds = 60*2;
+                        @Override
+                        public void run() {
+                            switch (seconds) {
+                                case 120:
+                                    for (Player online : Bukkit.getOnlinePlayers()) {
+                                        online.sendTitle("§a#" + teamManager.getLastTeamStanding(), "§9hat das Projekt gewonnen!");
+                                    }
+                                    Bukkit.broadcastMessage(MiniVaroCore.getPrefix() + "§c§lDas Projekt wurde beendet!");
+                                    Bukkit.broadcastMessage(MiniVaroCore.getPrefix() + "§a#" + teamManager.getLastTeamStanding() + "§9hat das Projekt gewonnen!");
+                                    Bukkit.broadcastMessage(MiniVaroCore.getPrefix() + "§cDer Server wird in §e2 Minuten §causgeschaltet!");
+                                    break;
+                                case 60:
+                                    Bukkit.broadcastMessage(MiniVaroCore.getPrefix() + "§cDer Server wird in §e1 Minute §causgeschaltet!");
+                                    break;
+                                case 30: case 15: case 10: case 5: case 4: case 3: case 2:
+                                    Bukkit.broadcastMessage(MiniVaroCore.getPrefix() + "§cDer Server wird in §e"+seconds+" Sekunden §causgeschaltet!");
+                                    break;
+                                case 1:
+                                    Bukkit.broadcastMessage(MiniVaroCore.getPrefix() + "§cDer Server wird in §e"+seconds+" Sekunde §causgeschaltet!");
+                                    break;
+                                case 0:
+                                    Bukkit.getServer().shutdown();
+                                    break;
+                            }
+                            seconds--;
+                        }
+                    }.runTaskTimer(MiniVaroCore.getInstance(), 0, 20);
+                }
+            }
+
         }
     }
 

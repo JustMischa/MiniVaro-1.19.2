@@ -11,6 +11,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.scheduler.BukkitRunnable;
 
 public class QuitListener implements Listener {
 
@@ -30,7 +31,12 @@ public class QuitListener implements Listener {
                 event.setQuitMessage(null);
             }
         } else {
-            Bukkit.getOnlinePlayers().forEach(LobbyScoreboard::new);
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    Bukkit.getOnlinePlayers().forEach(LobbyScoreboard::new);
+                }
+            }.runTaskLater(MiniVaroCore.getInstance(), 5);
         }
     }
 }

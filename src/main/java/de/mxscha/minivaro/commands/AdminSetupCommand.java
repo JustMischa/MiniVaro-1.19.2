@@ -36,6 +36,29 @@ public class AdminSetupCommand implements CommandExecutor {
                                 }
                             }
                         }
+                        if (args[0].equalsIgnoreCase("set")) {
+                            if (args[1].equalsIgnoreCase("lobby")) {
+                                if (args[2].equalsIgnoreCase("register")) {
+                                    new ConfigLocationUtil(player.getLocation(),"LobbyTeamRegister").saveLocation();
+                                    player.sendMessage(MiniVaroCore.getPrefix() + "§7Du hast den Lobby Team Register gesetzt!");
+                                }
+                            }
+                        }
+                        break;
+                    case 5:
+                        if (args[0].equalsIgnoreCase("set")) {
+                            if (args[1].equalsIgnoreCase("Region")) {
+                                if (args[2].equalsIgnoreCase("Portal")) {
+                                    if (args[3].equalsIgnoreCase("1")) {
+                                        new ConfigLocationUtil(player.getLocation(),"PortalArea1").saveLocation();
+                                        player.sendMessage(MiniVaroCore.getPrefix() + "§7Du hast die 1 Location für die Portal-Chest-Area gesetzt!");
+                                    } else if (args[3].equalsIgnoreCase("2")) {
+                                        new ConfigLocationUtil(player.getLocation(),"PortalArea2").saveLocation();
+                                        player.sendMessage(MiniVaroCore.getPrefix() + "§7Du hast die 1 Location für die Portal-Chest-Area gesetzt!");
+                                    }
+                                }
+                            }
+                        }
                         break;
                 }
             }
