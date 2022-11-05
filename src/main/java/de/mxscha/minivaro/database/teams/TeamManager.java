@@ -23,7 +23,8 @@ public class TeamManager {
                 "alivePlayer1 BOOLEAN, " +
                 "alivePlayer2 BOOLEAN, " +
                 "aliveTeam BOOLEAN, " +
-                "kills INT(35)" +
+                "kills INT(35)," +
+                "teamID INT(35)" +
                 ")");
         mySQL.update("CREATE TABLE IF NOT EXISTS players(uuid VARCHAR(36), playerID INT(35))");
     }
@@ -89,6 +90,36 @@ public class TeamManager {
     }
 
     // Team Manger
+
+
+    public int getLastTeamsID() {
+        return getTeamsCount()+1;
+    }
+
+    public int getTeamID(String teamName) {
+        String qry = "SELECT teamID FROM teams WHERE name=?";
+        try (ResultSet rs = this.mySQL.query(qry, teamName)) {
+            if (rs.next()) {
+                return rs.getInt("teamID");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
+
+    public String getTeamByID(int ID) {
+        String qry = "SELECT name FROM teams WHERE teamID=?";
+        try (ResultSet rs = this.mySQL.query(qry, ID)) {
+            if (rs.next()) {
+                return rs.getString("name");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     public String getLastTeamStanding() {
         if (getAliveTeamsCount() == 1) {
@@ -261,7 +292,7 @@ public class TeamManager {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return -1;
+        return 0;
     }
 
     public int getAliveTeamsCount() {

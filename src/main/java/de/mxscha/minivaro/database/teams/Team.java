@@ -4,6 +4,8 @@ import de.mxscha.minivaro.MiniVaroCore;
 import de.mxscha.minivaro.database.MySQL;
 import org.bukkit.OfflinePlayer;
 
+import java.util.UUID;
+
 public class Team {
 
     private final MySQL mySQL;
@@ -21,11 +23,19 @@ public class Team {
     }
 
     public void save() {
-        mySQL.update("INSERT INTO teams (name, shortcut, player1, player2, alivePlayer1, alivePlayer2, aliveTeam, kills) VALUES (?,?,?,?,?,?,?,?)",
-                name, shortcut, player1.getName(), player2.getName(), true, true, true, 0);
         TeamManager teamManager = MiniVaroCore.getInstance().getTeamManager();
-        teamManager.initPlayerWithID(player1.getUniqueId());
-        teamManager.initPlayerWithID(player2.getUniqueId());
+        mySQL.update("INSERT INTO teams (name, shortcut, player1, player2, alivePlayer1, alivePlayer2, aliveTeam, kills, teamID) VALUES (?,?,?,?,?,?,?,?, ?)",
+                name, shortcut, player1.getName(), player2.getName(), true, true, true, 0, teamManager.getLastTeamsID());
+        if (player1.getName().equals("null")) {
+            teamManager.initPlayerWithID(UUID.randomUUID());
+        } else {
+            teamManager.initPlayerWithID(player1.getUniqueId());
+        }
+        if (player2.getName().equals("null")) {
+            teamManager.initPlayerWithID(UUID.randomUUID());
+        } else {
+            teamManager.initPlayerWithID(player2.getUniqueId());
+        }
     }
 
     public String getShortcut() {

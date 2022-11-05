@@ -22,9 +22,17 @@ public class LobbyScoreboard extends ScoreboardBuilder {
             setScore("§a", 9);
             setScore("§8● §7Team Kamerad§8:", 8);
             if (manager.isPlayer1(player.getName())) {
-                setScore("  §8» §9" + manager.getPlayer2(manager.getTeam(player.getName())), 7);
+                if (!manager.getPlayer2(manager.getTeam(player.getName())).equals("null")) {
+                    setScore("  §8» §9" + manager.getPlayer2(manager.getTeam(player.getName())), 7);
+                } else {
+                    setScore("  §8» §cNiemand", 7);
+                }
             } else {
-                setScore("  §8» §9" + manager.getPlayer1(manager.getTeam(player.getName())), 7);
+                if (!manager.getPlayer1(manager.getTeam(player.getName())).equals("null")) {
+                    setScore("  §8» §9" + manager.getPlayer1(manager.getTeam(player.getName())), 7);
+                } else {
+                    setScore("  §8» §cNiemand", 7);
+                }
             }
         } else {
             setScore("§8§m                               ", 9);

@@ -37,6 +37,7 @@ public class JoinListener implements Listener {
         Player player = event.getPlayer();
         manager = MiniVaroCore.getInstance().getTeamManager();
         if (manager.hasATeam(player.getName())) {
+            player.sendMessage(manager.getTeamID(manager.getTeam(player.getName()))+"");
             event.setJoinMessage("§8[§a" + manager.getTeamShortCut(manager.getTeam(player.getName())) + "§8] §9" + player.getName() + "§7 hat das Spiel betreten!");
         } else {
             event.setJoinMessage("§9" + player.getName() + "§7 hat das Spiel betreten!");

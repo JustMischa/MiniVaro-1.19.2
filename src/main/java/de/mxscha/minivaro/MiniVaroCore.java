@@ -1,9 +1,6 @@
 package de.mxscha.minivaro;
 
-import de.mxscha.minivaro.commands.AdminCommand;
-import de.mxscha.minivaro.commands.AdminSetupCommand;
-import de.mxscha.minivaro.commands.AdminStartCommand;
-import de.mxscha.minivaro.commands.TeamCommand;
+import de.mxscha.minivaro.commands.*;
 import de.mxscha.minivaro.database.MySQL;
 import de.mxscha.minivaro.database.teams.TeamManager;
 import de.mxscha.minivaro.listeners.*;
@@ -67,6 +64,10 @@ public final class MiniVaroCore extends JavaPlugin {
         getCommand("start").setExecutor(new AdminStartCommand());
         getCommand("setup").setExecutor(new AdminSetupCommand());
         getCommand("admin").setExecutor(new AdminCommand());
+        getCommand("accept").setExecutor(new AcceptCommand());
+        getCommand("decline").setExecutor(new DeclineCommand());
+
+        dropTables();
 
         TeamManager = new TeamManager();
         GameManager = new GameManager();
@@ -135,6 +136,13 @@ public final class MiniVaroCore extends JavaPlugin {
         if (password == null)
             password = "";
         this.mySQL = MySQL.newBuilder().withUrl(url).withPort(port).withDatabase(database).withUser(user).withPassword(password).create();
+    }
+
+    private void dropTables() {
+        mySQL.update("DROP TABLE players");
+        mySQL.update("DROP TABLE playTime");
+        mySQL.update("DROP TABLE teams");
+        mySQL.update("DROP TABLE game");
     }
 
     public static String getPrefix() {

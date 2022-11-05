@@ -26,12 +26,20 @@ public class DefaultScoreboard extends ScoreboardBuilder {
             setScore("§8● §7Team Kamerad§8:", 3);
             if (manager.isPlayer1(player.getName())) {
                 if (manager.isAlivePlayer2(manager.getTeam(player.getName()))) {
-                    setScore("  §8» §6" + manager.getPlayer2(manager.getTeam(player.getName())), 2);
+                    if (!manager.getPlayer2(manager.getTeam(player.getName())).equals("null")) {
+                        setScore("  §8» §6" + manager.getPlayer2(manager.getTeam(player.getName())), 2);
+                    } else {
+                        setScore("  §8» §cNiemand", 2);
+                    }
                 } else
                     setScore("  §8» §c† §7| §8" + manager.getPlayer2(manager.getTeam(player.getName())), 2);
             } else {
                 if (manager.isAlivePlayer1(manager.getTeam(player.getName()))) {
-                    setScore("  §8» §6" + manager.getPlayer1(manager.getTeam(player.getName())), 2);
+                    if (!manager.getPlayer1(manager.getTeam(player.getName())).equals("null")) {
+                        setScore("  §8» §6" + manager.getPlayer1(manager.getTeam(player.getName())), 2);
+                    } else {
+                        setScore("  §8» §cNiemand", 2);
+                    }
                 } else
                     setScore("  §8» §c† §7| §8" + manager.getPlayer1(manager.getTeam(player.getName())), 2);
             }
