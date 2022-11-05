@@ -34,18 +34,20 @@ public class TeamRegisterListener implements Listener {
     public void onInteract(PlayerInteractAtEntityEvent event) {
         Player player = event.getPlayer();
         if (!MiniVaroCore.getInstance().getGameManager().isStarted()) {
-            if (event.getRightClicked() instanceof  Allay teamRegister) {
+            if (event.getRightClicked() instanceof Allay teamRegister) {
                 if (teamRegister.getName().equals(TEAM_REGISTER_NAME)) {
                     event.setCancelled(true);
                     TeamManager manager = MiniVaroCore.getInstance().getTeamManager();
                     if (manager.hasATeam(player.getName())) {
-                        player.sendMessage(MiniVaroCore.getPrefix() + "§cDu bist bereits in einem Team!");
+                        if (event.getHand() == player.getHandRaised()) {
+                            player.sendMessage(MiniVaroCore.getPrefix() + "§cDu bist bereits in einem Team!");
+                        }
                     } else {
                         if (!register.containsKey(player)) {
-                            TEAM_REGISTER_INVENTORY = Bukkit.createInventory(null, 9*5, TEAM_REGISTER_NAME);
+                            TEAM_REGISTER_INVENTORY = Bukkit.createInventory(null, 9 * 5, TEAM_REGISTER_NAME);
                             player.openInventory(TEAM_REGISTER_INVENTORY);
                             fillWithGlass(TEAM_REGISTER_INVENTORY);
-                            addExitButton(TEAM_REGISTER_INVENTORY);;
+                            addExitButton(TEAM_REGISTER_INVENTORY);
                             addItems(player, TEAM_REGISTER_INVENTORY);
                         } else {
                             player.openInventory(register.get(player));
@@ -72,32 +74,35 @@ public class TeamRegisterListener implements Listener {
                         player.openInventory(inventory);
                         break;
                 }
-            } else if(event.getView().getTitle().equals("§a§lSpieler 2 eintragen")) {
-                event.setCancelled(true);
-                if (event.getInventory() instanceof AnvilInventory) {
-                    InventoryView view = event.getView();
-                    int rawSlot = event.getRawSlot();
-                    if(rawSlot == view.convertSlot(rawSlot)) {
-                        if (rawSlot == 2) {
-                            ItemStack item = event.getCurrentItem();
-                            if (item != null) {
-                                ItemMeta meta = item.getItemMeta();
-                                if (meta != null) {
-                                    if (meta.hasDisplayName()) {
-                                        String displayName = meta.getDisplayName();
-                                        if (!displayName.equals("Spieler 2")) {
-                                            try {
-                                                String mateName = ChatColor.stripColor(displayName);
-                                                Player mate = Bukkit.getPlayer(mateName);
-                                            } catch (Exception exception) {
-                                                player.closeInventory();
-                                                player.sendMessage(MiniVaroCore.getPrefix() + "§cDieser Spieler ist nicht Online!");
-                                            }
-                                        }
-                                    }
-                                }
+            } else if (event.getView().getTitle().equals("§a§lSpieler 2 eintragen")) {
+                InventoryView view = event.getView();
+                int rawSlot = event.getRawSlot();
+                if (rawSlot == view.convertSlot(rawSlot)) {
+                    switch (rawSlot) {
+                        case 2:
+                            ItemStack item = view.getItem(rawSlot);
+                            if (item == null) return;
+                            try {
+                                String name = item.getItemMeta().getDisplayName();
+                                Player mate = Bukkit.getPlayer(ChatColor.stripColor(name));
+                                player.closeInventory();
+                                player.sendMessage(MiniVaroCore.getPrefix() + "§7Du hast §9" + mate.getName() + "§7 zu deinem Team eingeladen!");
+                                mate.sendMessage(MiniVaroCore.getPrefix() + "§7Du wurdest von §9" + player.getName() + " §7zu einem Team eingeladen!");
+                                mate.sendMessage(MiniVaroCore.getPrefix() + "§7Nehme diese Einladung mit §c/accept §8[§9pplayername§8] §7an!");
+                                pending.put(player, mate);
+                                TEAM_REGISTER_INVENTORY = Bukkit.createInventory(null, 9 * 5, TEAM_REGISTER_NAME);
+                                player.openInventory(TEAM_REGISTER_INVENTORY);
+                                fillWithGlass(TEAM_REGISTER_INVENTORY);
+                                addExitButton(TEAM_REGISTER_INVENTORY);
+                                if (!register.containsKey(player)) register.put(player, TEAM_REGISTER_INVENTORY);
+                            } catch (Exception exception) {
+                                player.sendMessage(MiniVaroCore.getPrefix() + "§cDieser Spieler ist nicht Online!");
+                                player.closeInventory();
                             }
-                        }
+                            break;
+                        case 0:
+                            event.setCancelled(true);
+                            break;
                     }
                 }
             }
@@ -110,7 +115,7 @@ public class TeamRegisterListener implements Listener {
                 inventory.setItem(13, new ItemCreator(Material.NAME_TAG).setName("§8● §aTeam Name eintragen").toItemStack());
                 inventory.setItem(21, new ItemCreator(Material.PAPER).setName("§8● §9Team Kürzel eintragen").toItemStack());
                 inventory.setItem(22, new ItemCreator(Material.WITHER_SKELETON_SKULL).setName("§8● §6Spieler 1 (Du)").toItemStack());
-                inventory.setItem(23, new ItemCreator(Material.SKELETON_SKULL).setName("§8● §6"+pending.get(player.getName()).getName()+" §0(ausgehend)").toItemStack());
+                inventory.setItem(23, new ItemCreator(Material.SKELETON_SKULL).setName("§8● §6" + pending.get(player.getName()).getName() + " §0(ausgehend)").toItemStack());
             }
         } else {
             inventory.setItem(13, new ItemCreator(Material.NAME_TAG).setName("§8● §aTeam Name eintragen").toItemStack());
@@ -128,7 +133,7 @@ public class TeamRegisterListener implements Listener {
     }
 
     public static void addExitButton(Inventory inventory) {
-        inventory.setItem(inventory.getSize()-5, new ItemCreator(Material.REDSTONE).setName("§8● §cSchließen").toItemStack());
+        inventory.setItem(inventory.getSize() - 5, new ItemCreator(Material.REDSTONE).setName("§8● §cSchließen").toItemStack());
     }
 
     public void spawnTeamRegisterEntity() {
@@ -136,7 +141,7 @@ public class TeamRegisterListener implements Listener {
         Location lobbyTeamRegister = new ConfigLocationUtil("LobbyTeamRegister").loadLocation();
         if (lobbyTeamRegister == null) return;
         World world = lobbyTeamRegister.getWorld();
-        Allay teamRegister = (Allay) world.spawnEntity(lobbyTeamRegister.add(0 ,1, 0), EntityType.ALLAY);
+        Allay teamRegister = (Allay) world.spawnEntity(lobbyTeamRegister.add(0, 1, 0), EntityType.ALLAY);
         teamRegister.setAI(false);
         teamRegister.setInvulnerable(true);
         teamRegister.setSilent(true);

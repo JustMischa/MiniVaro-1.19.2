@@ -89,9 +89,9 @@ public final class MiniVaroCore extends JavaPlugin {
                     Bukkit.getOnlinePlayers().forEach(player -> {
                         TimeManager.removeSecond(player.getUniqueId());
                         switch (TimeManager.getTime(player.getUniqueId())) {
-                            case 60 -> player.sendMessage(MiniVaroCore.getPrefix() + "§c§lACHTUNG§7, §7Deine Zeit für heute endet in §91 Minute");
-                            case 30, 20, 15, 10, 5, 4, 3, 2 -> player.sendMessage(MiniVaroCore.getPrefix() + "§c§lACHTUNG§7, §7Deine Zeit für heute endet in §9" + TimeManager.getTime(player.getUniqueId()) + " Sekunden");
-                            case 1 -> player.sendMessage(MiniVaroCore.getPrefix() + "§c§lACHTUNG§7, §7Deine Zeit für heute endet in §9" + TimeManager.getTime(player.getUniqueId()) + " Sekunde");
+                            case 60 -> Bukkit.broadcastMessage(MiniVaroCore.getPrefix() + "§c" + player.getName() + "§7 wird in §9§l1 Minute §7gekickt!");
+                            case 30, 20, 15, 10, 5, 4, 3, 2 -> Bukkit.broadcastMessage(MiniVaroCore.getPrefix() + "§c" + player.getName() + "§7 wird in §9§l"+TimeManager.getTime(player.getUniqueId())+" Sekunden §7gekickt!");
+                            case 1 -> Bukkit.broadcastMessage(MiniVaroCore.getPrefix() + "§c" + player.getName() + "§7 wird in §9§l"+TimeManager.getTime(player.getUniqueId())+" Sekunde §7gekickt!");
                             case 0 -> player.kickPlayer(MiniVaroCore.getScoreboardTitle() + "\n §8§m                                                 §f\n" + "  §c§lDeine Zeit für Heute ist aufgebraucht! \n \n  §7Du kannst morgen wieder Spielen! \n  §8§m                                                 §f");
                         }
                     });
